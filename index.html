@@ -13,7 +13,7 @@
             color: #333; 
         }
         .container { 
-            max-width: 600px; 
+            max-width: 700px; 
             margin: 0 auto; 
             background: white; 
             padding: 25px; 
@@ -40,20 +40,27 @@
         .stats-box { background: #ebf8ff; border: 1px solid #bee3f8; padding: 15px; border-radius: 8px; margin-top: 25px; }
         .stats-title { font-weight: bold; color: #2b6cb0; margin-bottom: 8px; font-size: 14px; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
-        .data-list { margin-top: 20px; max-height: 250px; overflow-y: auto; background: #f7fafc; padding: 12px; border-radius: 8px; border: 1px solid #edf2f7; font-size: 13px; }
-        .data-item { padding: 8px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; }
-        .data-item:last-child { border-bottom: none; }
         
+        /* Table Styles for better display and print */
+        .table-container { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
+        th, td { border: 1px solid #edf2f7; padding: 10px; text-align: left; }
+        th { background-color: #f7fafc; color: #4a5568; font-weight: bold; }
+        tr:nth-child(even) { background-color: #fcfdfd; }
+        
+        /* Print Section styling */
+        #print-section { display: none; }
+
         /* Print Styles for A4 */
         @media print {
             body { background: white; color: black; padding: 0; margin: 0; }
-            .container { max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
-            .nav-buttons, #storeForm, .btn-danger, .btn-info { display: none !important; }
-            .stats-box { border: 1px solid #000; background: none; color: #000; margin-bottom: 20px; }
-            .stats-title { color: #000; }
-            .data-list { max-height: none; overflow: visible; background: none; border: none; padding: 0; }
-            .data-item { border-bottom: 1px solid #ccc; font-size: 14px; page-break-inside: avoid; }
-            h2::after { content: " - Rapport"; }
+            .container { display: none !important; }
+            #print-section { display: block !important; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            th, td { border: 1px solid #333 !important; padding: 8px; text-align: left; }
+            th { background-color: #eee !important; color: #000 !important; }
+            .print-header { text-align: center; margin-bottom: 30px; }
+            .print-stats { margin-bottom: 20px; padding: 10px; border: 1px solid #333; }
         }
     </style>
 </head>
@@ -64,7 +71,7 @@
     
     <div class="nav-buttons">
         <div id="btn-daglig" class="nav-btn active" onclick="switchMode('daglig')">Daglig Inndata</div>
-        <div id="btn-historisk" class="nav-btn" onclick="switchMode('historisk')">Historisk (Fra 2025)</div>
+        <div id="btn-historisk" class="nav-btn" onclick="switchMode('historisk')">Historisk</div>
     </div>
 
     <form id="storeForm">
@@ -76,33 +83,33 @@
         <div class="grid-2">
             <div class="form-group">
                 <label for="bank">Bank:</label>
-                <input type="number" id="bank" step="0.01" placeholder="0.00" min="0">
+                <input type="number" id="bank" step="0.01" inputmode="decimal" placeholder="0.00" min="0">
             </div>
             <div class="form-group">
                 <label for="kontant">Kontant:</label>
-                <input type="number" id="kontant" step="0.01" placeholder="0.00" min="0">
+                <input type="number" id="kontant" step="0.01" inputmode="decimal" placeholder="0.00" min="0">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
                 <label for="gavekort">Gavekort:</label>
-                <input type="number" id="gavekort" step="0.01" placeholder="0.00" min="0">
+                <input type="number" id="gavekort" step="0.01" inputmode="decimal" placeholder="0.00" min="0">
             </div>
             <div class="form-group">
                 <label for="vipps">Vipps:</label>
-                <input type="number" id="vipps" step="0.01" placeholder="0.00" min="0">
+                <input type="number" id="vipps" step="0.01" inputmode="decimal" placeholder="0.00" min="0">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
                 <label for="varekjoep">Varekjøp:</label>
-                <input type="number" id="varekjoep" step="0.01" placeholder="0.00" min="0">
+                <input type="number" id="varekjoep" step="0.01" inputmode="decimal" placeholder="0.00" min="0">
             </div>
             <div class="form-group">
                 <label for="andreUtgifter">Andre Utgifter:</label>
-                <input type="number" id="andreUtgifter" step="0.01" placeholder="0.00" min="0">
+                <input type="number" id="andreUtgifter" step="0.01" inputmode="decimal" placeholder="0.00" min="0">
             </div>
         </div>
 
@@ -113,7 +120,7 @@
 
         <button type="submit">Lagre Data</button>
         <button type="button" class="btn-secondary" onclick="exportToCSV()">Eksporter til Excel / Numbers</button>
-        <button type="button" class="btn-info" onclick="window.print()">Skriv ut Rapport (A4)</button>
+        <button type="button" class="btn-info" onclick="printReport()">Skriv ut Rapport (A4)</button>
     </form>
 
     <div class="stats-box">
@@ -124,10 +131,61 @@
         </div>
     </div>
 
-    <h3>Lagrede oppføringer:</h3>
-    <div class="data-list" id="dataList">Ingen data lagret ennå.</div>
+    <h3 style="margin-top:25px;">Lagrede oppføringer:</h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Dato</th>
+                    <th>Type</th>
+                    <th>Bank</th>
+                    <th>Kontant</th>
+                    <th>Gavekort</th>
+                    <th>Vipps</th>
+                    <th>Salg</th>
+                    <th>Varekjøp</th>
+                    <th>Utgifter</th>
+                    <th>Netto</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data dynamically goes here -->
+            </tbody>
+        </table>
+    </div>
     
     <button type="button" class="btn-danger" onclick="clearAllData()">Slett all data</button>
+</div>
+
+<!-- Dedicated Hidden Print Section to guarantee A4 printing works flawlessly -->
+<div id="print-section">
+    <div class="print-header">
+        <h1>Butikk Regnskapsrapport</h1>
+        <p>Utskriftsdato: <span id="print-current-date"></span></p>
+    </div>
+    <div class="print-stats">
+        <h3>Oppsummering</h3>
+        <p><strong>Totalt Salg:</strong> <span id="print-stat-salg">0.00</span> kr</p>
+        <p><strong>Netto Resultat:</strong> <span id="print-stat-netto">0.00</span> kr</p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Dato</th>
+                <th>Type</th>
+                <th>Bank</th>
+                <th>Kontant</th>
+                <th>Gavekort</th>
+                <th>Vipps</th>
+                <th>Totalt Salg</th>
+                <th>Varekjøp</th>
+                <th>Andre Utgifter</th>
+                <th>Netto Resultat</th>
+            </tr>
+        </thead>
+        <tbody id="printTableBody">
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -193,9 +251,8 @@
     });
 
     function updateDisplay() {
-        const dataList = document.getElementById('dataList');
+        const tableBody = document.getElementById('tableBody');
         let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
-        let filtered = allData.filter(d => d.mode === currentMode);
         
         let sumSalg = 0;
         let sumNetto = 0;
@@ -208,28 +265,40 @@
         document.getElementById('stat-salg').innerText = sumSalg.toFixed(2);
         document.getElementById('stat-netto').innerText = sumNetto.toFixed(2);
         
-        if (filtered.length === 0) {
-            dataList.innerHTML = "<div style='color:#718096; text-align:center;'>Ingen data lagret for denne kategorien.</div>";
+        if (allData.length === 0) {
+            tableBody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#718096;'>Ingen data lagret ennå.</td></tr>";
             return;
         }
 
-        dataList.innerHTML = filtered.slice().reverse().map((d) => 
-            `<div class='data-item'>
-                <span><strong>${d.dato}</strong></span>
-                <span>Salg: ${d.totaltSalg.toFixed(2)} kr | Netto: ${d.nettoResultat.toFixed(2)} kr</span>
-             </div>`
-        ).join('');
+        // Display all rows to enable viewing and toggling both daily and historical records
+        tableBody.innerHTML = allData.slice().reverse().map((d) => {
+            const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
+            return `<tr>
+                <td><strong>${d.dato}</strong></td>
+                <td><span style="padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; background:${d.mode==='daglig'?'#e2e8f0':'#feebc8'};">${typeLabel}</span></td>
+                <td>${d.bank.toFixed(2)}</td>
+                <td>${d.kontant.toFixed(2)}</td>
+                <td>${d.gavekort.toFixed(2)}</td>
+                <td>${d.vipps.toFixed(2)}</td>
+                <td><span style="color:#2f855a; font-weight:bold;">${d.totaltSalg.toFixed(2)}</span></td>
+                <td>${d.varekjoep.toFixed(2)}</td>
+                <td>${d.andreUtgifter.toFixed(2)}</td>
+                <td><span style="color:#b7791f; font-weight:bold;">${d.nettoResultat.toFixed(2)}</span></td>
+            </tr>`;
+        }).join('');
     }
 
     function exportToCSV() {
         let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
         if(allData.length === 0) { alert('Ingen data å eksportere!'); return; }
         
-        let csvContent = "﻿Måned / År,Bank,Kontant,Gavekort,Vipps,Totalt Salg,Varekjøp,Andre Utgifter,Faste Kostnader,Netto Resultat,Kommentar
+        // Formatted properly with standard comma separation and explicit download trigger
+        let csvContent = "﻿Type,Dato,Bank,Kontant,Gavekort,Vipps,Totalt Salg,Varekjøp,Andre Utgifter,Faste Kostnader,Netto Resultat,Kommentar
 ";
         
         allData.forEach(d => {
-            csvContent += `${d.dato},${d.bank},${d.kontant},${d.gavekort},${d.vipps},${d.totaltSalg},${d.varekjoep},${d.andreUtgifter},${d.fasteKostnader},${d.nettoResultat},"${d.kommentar}"
+            const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
+            csvContent += `${typeLabel},${d.dato},${d.bank},${d.kontant},${d.gavekort},${d.vipps},${d.totaltSalg},${d.varekjoep},${d.andreUtgifter},${d.fasteKostnader},${d.nettoResultat},"${d.kommentar.replace(/"/g, '""')}"
 `;
         });
         
@@ -241,6 +310,44 @@
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    function printReport() {
+        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        
+        let sumSalg = 0;
+        let sumNetto = 0;
+        allData.forEach(d => {
+            sumSalg += d.totaltSalg;
+            sumNetto += d.nettoResultat;
+        });
+
+        document.getElementById('print-current-date').innerText = new Date().toLocaleDateString('no-NO');
+        document.getElementById('print-stat-salg').innerText = sumSalg.toFixed(2);
+        document.getElementById('print-stat-netto').innerText = sumNetto.toFixed(2);
+        
+        const printTableBody = document.getElementById('printTableBody');
+        if (allData.length === 0) {
+            printTableBody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>Ingen data tilgjengelig.</td></tr>";
+        } else {
+            printTableBody.innerHTML = allData.map(d => {
+                const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
+                return `<tr>
+                    <td>${d.dato}</td>
+                    <td>${typeLabel}</td>
+                    <td>${d.bank.toFixed(2)}</td>
+                    <td>${d.kontant.toFixed(2)}</td>
+                    <td>${d.gavekort.toFixed(2)}</td>
+                    <td>${d.vipps.toFixed(2)}</td>
+                    <td>${d.totaltSalg.toFixed(2)}</td>
+                    <td>${d.varekjoep.toFixed(2)}</td>
+                    <td>${d.andreUtgifter.toFixed(2)}</td>
+                    <td>${d.nettoResultat.toFixed(2)}</td>
+                </tr>`;
+            }).join('');
+        }
+        
+        window.print();
     }
 
     function clearAllData() {
