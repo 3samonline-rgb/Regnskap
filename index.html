@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Butikk Data Dashboard</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f4f6f9; 
+            margin: 0; 
+            padding: 20px; 
+            color: #333; 
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 25px; 
+            border-radius: 16px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+        }
+        h2 { text-align: center; color: #004080; margin-bottom: 25px; font-weight: 700; }
+        .nav-buttons { display: flex; gap: 10px; margin-bottom: 25px; }
+        .nav-btn { background-color: #e2e8f0; color: #4a5568; padding: 12px; border-radius: 8px; text-align: center; flex: 1; cursor: pointer; font-size: 14px; font-weight: bold; transition: all 0.2s; }
+        .nav-btn.active { background-color: #004080; color: white; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #2d3748; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fff; }
+        input:focus, textarea:focus { border-color: #004080; outline: none; box-shadow: 0 0 0 3px rgba(0,64,128,0.1); }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        button { width: 100%; padding: 14px; background-color: #004080; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
+        button:hover { background-color: #002d59; }
+        .btn-secondary { background-color: #28a745; margin-top: 10px; }
+        .btn-secondary:hover { background-color: #1e7e34; }
+        .btn-info { background-color: #17a2b8; margin-top: 10px; }
+        .btn-info:hover { background-color: #138496; }
+        .btn-danger { background-color: #dc3545; margin-top: 25px; padding: 8px; font-size: 12px; }
+        .btn-danger:hover { background-color: #bd2130; }
+        .stats-box { background: #ebf8ff; border: 1px solid #bee3f8; padding: 15px; border-radius: 8px; margin-top: 25px; }
+        .stats-title { font-weight: bold; color: #2b6cb0; margin-bottom: 8px; font-size: 14px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
+        .data-list { margin-top: 20px; max-height: 250px; overflow-y: auto; background: #f7fafc; padding: 12px; border-radius: 8px; border: 1px solid #edf2f7; font-size: 13px; }
+        .data-item { padding: 8px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; }
+        .data-item:last-child { border-bottom: none; }
+        
+        /* Print Styles for A4 */
+        @media print {
+            body { background: white; color: black; padding: 0; margin: 0; }
+            .container { max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
+            .nav-buttons, #storeForm, .btn-danger, .btn-info { display: none !important; }
+            .stats-box { border: 1px solid #000; background: none; color: #000; margin-bottom: 20px; }
+            .stats-title { color: #000; }
+            .data-list { max-height: none; overflow: visible; background: none; border: none; padding: 0; }
+            .data-item { border-bottom: 1px solid #ccc; font-size: 14px; page-break-inside: avoid; }
+            h2::after { content: " - Rapport"; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Butikk-inndata Dashboard</h2>
+    
+    <div class="nav-buttons">
+        <div id="btn-daglig" class="nav-btn active" onclick="switchMode('daglig')">Daglig Inndata</div>
+        <div id="btn-historisk" class="nav-btn" onclick="switchMode('historisk')">Historisk (Fra 2025)</div>
+    </div>
+
+    <form id="storeForm">
+        <div class="form-group">
+            <label id="dateLabel" for="dato">Dato:</label>
+            <input type="date" id="dato" required>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="bank">Bank:</label>
+                <input type="number" id="bank" step="0.01" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+                <label for="kontant">Kontant:</label>
+                <input type="number" id="kontant" step="0.01" placeholder="0.00" min="0">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="gavekort">Gavekort:</label>
+                <input type="number" id="gavekort" step="0.01" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+                <label for="vipps">Vipps:</label>
+                <input type="number" id="vipps" step="0.01" placeholder="0.00" min="0">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="varekjoep">Varekjøp:</label>
+                <input type="number" id="varekjoep" step="0.01" placeholder="0.00" min="0">
+            </div>
+            <div class="form-group">
+                <label for="andreUtgifter">Andre Utgifter:</label>
+                <input type="number" id="andreUtgifter" step="0.01" placeholder="0.00" min="0">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="kommentar">Kommentar:</label>
+            <textarea id="kommentar" rows="2" placeholder="Skriv en kommentar her..."></textarea>
+        </div>
+
+        <button type="submit">Lagre Data</button>
+        <button type="button" class="btn-secondary" onclick="exportToCSV()">Eksporter til Excel / Numbers</button>
+        <button type="button" class="btn-info" onclick="window.print()">Skriv ut Rapport (A4)</button>
+    </form>
+
+    <div class="stats-box">
+        <div class="stats-title">📊 Oppsummering (Akkumulert)</div>
+        <div class="stats-grid">
+            <div>Totalt Salg: <span id="stat-salg" style="font-weight:bold; color:#2f855a;">0.00</span> kr</div>
+            <div>Netto Resultat: <span id="stat-netto" style="font-weight:bold; color:#b7791f;">0.00</span> kr</div>
+        </div>
+    </div>
+
+    <h3>Lagrede oppføringer:</h3>
+    <div class="data-list" id="dataList">Ingen data lagret ennå.</div>
+    
+    <button type="button" class="btn-danger" onclick="clearAllData()">Slett all data</button>
+</div>
+
+<script>
+    let currentMode = 'daglig';
+    const storeForm = document.getElementById('storeForm');
+    const dateLabel = document.getElementById('dateLabel');
+    
+    document.getElementById('dato').valueAsDate = new Date();
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.getElementById('btn-daglig').classList.toggle('active', mode === 'daglig');
+        document.getElementById('btn-historisk').classList.toggle('active', mode === 'historisk');
+        
+        const datoInput = document.getElementById('dato');
+        if (mode === 'historisk') {
+            dateLabel.innerText = "Måned / År (Velg en dato i måneden):";
+        } else {
+            dateLabel.innerText = "Dato:";
+            datoInput.valueAsDate = new Date();
+        }
+        updateDisplay();
+    }
+
+    storeForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const bank = parseFloat(document.getElementById('bank').value) || 0;
+        const kontant = parseFloat(document.getElementById('kontant').value) || 0;
+        const gavekort = parseFloat(document.getElementById('gavekort').value) || 0;
+        const vipps = parseFloat(document.getElementById('vipps').value) || 0;
+        const varekjoep = parseFloat(document.getElementById('varekjoep').value) || 0;
+        const andreUtgifter = parseFloat(document.getElementById('andreUtgifter').value) || 0;
+        
+        const totaltSalg = bank + kontant + gavekort + vipps;
+        const fasteKostnader = 0;
+        const nettoResultat = totaltSalg - (varekjoep + andreUtgifter + fasteKostnader);
+
+        const entry = {
+            mode: currentMode,
+            dato: document.getElementById('dato').value,
+            bank: bank,
+            kontant: kontant,
+            gavekort: gavekort,
+            vipps: vipps,
+            totaltSalg: totaltSalg,
+            varekjoep: varekjoep,
+            andreUtgifter: andreUtgifter,
+            fasteKostnader: fasteKostnader,
+            nettoResultat: nettoResultat,
+            kommentar: document.getElementById('kommentar').value || ""
+        };
+
+        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        allData.push(entry);
+        localStorage.setItem('butikkData', JSON.stringify(allData));
+        
+        storeForm.reset();
+        document.getElementById('dato').valueAsDate = new Date();
+        
+        alert('Data lagret suksessfullt!');
+        updateDisplay();
+    });
+
+    function updateDisplay() {
+        const dataList = document.getElementById('dataList');
+        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        let filtered = allData.filter(d => d.mode === currentMode);
+        
+        let sumSalg = 0;
+        let sumNetto = 0;
+        
+        allData.forEach(d => {
+            sumSalg += d.totaltSalg;
+            sumNetto += d.nettoResultat;
+        });
+        
+        document.getElementById('stat-salg').innerText = sumSalg.toFixed(2);
+        document.getElementById('stat-netto').innerText = sumNetto.toFixed(2);
+        
+        if (filtered.length === 0) {
+            dataList.innerHTML = "<div style='color:#718096; text-align:center;'>Ingen data lagret for denne kategorien.</div>";
+            return;
+        }
+
+        dataList.innerHTML = filtered.slice().reverse().map((d) => 
+            `<div class='data-item'>
+                <span><strong>${d.dato}</strong></span>
+                <span>Salg: ${d.totaltSalg.toFixed(2)} kr | Netto: ${d.nettoResultat.toFixed(2)} kr</span>
+             </div>`
+        ).join('');
+    }
+
+    function exportToCSV() {
+        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        if(allData.length === 0) { alert('Ingen data å eksportere!'); return; }
+        
+        let csvContent = "﻿Måned / År,Bank,Kontant,Gavekort,Vipps,Totalt Salg,Varekjøp,Andre Utgifter,Faste Kostnader,Netto Resultat,Kommentar
+";
+        
+        allData.forEach(d => {
+            csvContent += `${d.dato},${d.bank},${d.kontant},${d.gavekort},${d.vipps},${d.totaltSalg},${d.varekjoep},${d.andreUtgifter},${d.fasteKostnader},${d.nettoResultat},"${d.kommentar}"
+`;
+        });
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "butikk_regnskap_data.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function clearAllData() {
+        if(confirm("Er du sikker på at du vil slette all data?")) {
+            localStorage.removeItem('butikkData');
+            updateDisplay();
+        }
+    }
+
+    updateDisplay();
+</script>
+</body>
+</html>
