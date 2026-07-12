@@ -6,7 +6,7 @@
     <title>Butikk Data Dashboard</title>
     <style>
         body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: #f4f6f9; 
             margin: 0; 
             padding: 20px; 
@@ -26,7 +26,7 @@
         .nav-btn.active { background-color: #004080; color: white; }
         .form-group { margin-bottom: 18px; }
         label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 14px; color: #2d3748; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fff; }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; box-sizing: border-box; font-size: 16px; background-color: #fff; }
         input:focus, textarea:focus { border-color: #004080; outline: none; box-shadow: 0 0 0 3px rgba(0,64,128,0.1); }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         button { width: 100%; padding: 14px; background-color: #004080; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: background 0.2s; }
@@ -41,17 +41,14 @@
         .stats-title { font-weight: bold; color: #2b6cb0; margin-bottom: 8px; font-size: 14px; }
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
         
-        /* Table Styles for better display and print */
         .table-container { margin-top: 20px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
         th, td { border: 1px solid #edf2f7; padding: 10px; text-align: left; }
         th { background-color: #f7fafc; color: #4a5568; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfd; }
         
-        /* Print Section styling */
         #print-section { display: none; }
 
-        /* Print Styles for A4 */
         @media print {
             body { background: white; color: black; padding: 0; margin: 0; }
             .container { display: none !important; }
@@ -149,7 +146,6 @@
                 </tr>
             </thead>
             <tbody id="tableBody">
-                <!-- Data dynamically goes here -->
             </tbody>
         </table>
     </div>
@@ -157,7 +153,6 @@
     <button type="button" class="btn-danger" onclick="clearAllData()">Slett all data</button>
 </div>
 
-<!-- Dedicated Hidden Print Section to guarantee A4 printing works flawlessly -->
 <div id="print-section">
     <div class="print-header">
         <h1>Butikk Regnskapsrapport</h1>
@@ -190,10 +185,62 @@
 
 <script>
     let currentMode = 'daglig';
-    const storeForm = document.getElementById('storeForm');
-    const dateLabel = document.getElementById('dateLabel');
     
-    document.getElementById('dato').valueAsDate = new Date();
+    // Safely parse data
+    function getData() {
+        try {
+            let data = localStorage.getItem('butikkData');
+            return data ? JSON.parse(data) : [];
+        } catch(e) {
+            console.error("Error parsing storage", e);
+            return [];
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', (event) => {
+        document.getElementById('dato').valueAsDate = new Date();
+        updateDisplay();
+        
+        document.getElementById('storeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const bank = parseFloat(document.getElementById('bank').value) || 0;
+            const kontant = parseFloat(document.getElementById('kontant').value) || 0;
+            const gavekort = parseFloat(document.getElementById('gavekort').value) || 0;
+            const vipps = parseFloat(document.getElementById('vipps').value) || 0;
+            const varekjoep = parseFloat(document.getElementById('varekjoep').value) || 0;
+            const andreUtgifter = parseFloat(document.getElementById('andreUtgifter').value) || 0;
+            
+            const totaltSalg = bank + kontant + gavekort + vipps;
+            const fasteKostnader = 0;
+            const nettoResultat = totaltSalg - (varekjoep + andreUtgifter + fasteKostnader);
+
+            const entry = {
+                mode: currentMode,
+                dato: document.getElementById('dato').value,
+                bank: bank,
+                kontant: kontant,
+                gavekort: gavekort,
+                vipps: vipps,
+                totaltSalg: totaltSalg,
+                varekjoep: varekjoep,
+                andreUtgifter: andreUtgifter,
+                fasteKostnader: fasteKostnader,
+                nettoResultat: nettoResultat,
+                kommentar: document.getElementById('kommentar').value || ""
+            };
+
+            let allData = getData();
+            allData.push(entry);
+            localStorage.setItem('butikkData', JSON.stringify(allData));
+            
+            this.reset();
+            document.getElementById('dato').valueAsDate = new Date();
+            
+            alert('Data lagret suksessfullt!');
+            updateDisplay();
+        });
+    });
 
     function switchMode(mode) {
         currentMode = mode;
@@ -201,6 +248,7 @@
         document.getElementById('btn-historisk').classList.toggle('active', mode === 'historisk');
         
         const datoInput = document.getElementById('dato');
+        const dateLabel = document.getElementById('dateLabel');
         if (mode === 'historisk') {
             dateLabel.innerText = "Måned / År (Velg en dato i måneden):";
         } else {
@@ -210,56 +258,18 @@
         updateDisplay();
     }
 
-    storeForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const bank = parseFloat(document.getElementById('bank').value) || 0;
-        const kontant = parseFloat(document.getElementById('kontant').value) || 0;
-        const gavekort = parseFloat(document.getElementById('gavekort').value) || 0;
-        const vipps = parseFloat(document.getElementById('vipps').value) || 0;
-        const varekjoep = parseFloat(document.getElementById('varekjoep').value) || 0;
-        const andreUtgifter = parseFloat(document.getElementById('andreUtgifter').value) || 0;
-        
-        const totaltSalg = bank + kontant + gavekort + vipps;
-        const fasteKostnader = 0;
-        const nettoResultat = totaltSalg - (varekjoep + andreUtgifter + fasteKostnader);
-
-        const entry = {
-            mode: currentMode,
-            dato: document.getElementById('dato').value,
-            bank: bank,
-            kontant: kontant,
-            gavekort: gavekort,
-            vipps: vipps,
-            totaltSalg: totaltSalg,
-            varekjoep: varekjoep,
-            andreUtgifter: andreUtgifter,
-            fasteKostnader: fasteKostnader,
-            nettoResultat: nettoResultat,
-            kommentar: document.getElementById('kommentar').value || ""
-        };
-
-        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
-        allData.push(entry);
-        localStorage.setItem('butikkData', JSON.stringify(allData));
-        
-        storeForm.reset();
-        document.getElementById('dato').valueAsDate = new Date();
-        
-        alert('Data lagret suksessfullt!');
-        updateDisplay();
-    });
-
     function updateDisplay() {
         const tableBody = document.getElementById('tableBody');
-        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        if(!tableBody) return;
+        
+        let allData = getData();
         
         let sumSalg = 0;
         let sumNetto = 0;
         
         allData.forEach(d => {
-            sumSalg += d.totaltSalg;
-            sumNetto += d.nettoResultat;
+            sumSalg += (d.totaltSalg || 0);
+            sumNetto += (d.nettoResultat || 0);
         });
         
         document.getElementById('stat-salg').innerText = sumSalg.toFixed(2);
@@ -270,35 +280,42 @@
             return;
         }
 
-        // Display all rows to enable viewing and toggling both daily and historical records
         tableBody.innerHTML = allData.slice().reverse().map((d) => {
             const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
+            const b = parseFloat(d.bank) || 0;
+            const k = parseFloat(d.kontant) || 0;
+            const g = parseFloat(d.gavekort) || 0;
+            const v = parseFloat(d.vipps) || 0;
+            const ts = parseFloat(d.totaltSalg) || 0;
+            const vk = parseFloat(d.varekjoep) || 0;
+            const au = parseFloat(d.andreUtgifter) || 0;
+            const nr = parseFloat(d.nettoResultat) || 0;
+
             return `<tr>
-                <td><strong>${d.dato}</strong></td>
+                <td><strong>${d.dato || ''}</strong></td>
                 <td><span style="padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; background:${d.mode==='daglig'?'#e2e8f0':'#feebc8'};">${typeLabel}</span></td>
-                <td>${d.bank.toFixed(2)}</td>
-                <td>${d.kontant.toFixed(2)}</td>
-                <td>${d.gavekort.toFixed(2)}</td>
-                <td>${d.vipps.toFixed(2)}</td>
-                <td><span style="color:#2f855a; font-weight:bold;">${d.totaltSalg.toFixed(2)}</span></td>
-                <td>${d.varekjoep.toFixed(2)}</td>
-                <td>${d.andreUtgifter.toFixed(2)}</td>
-                <td><span style="color:#b7791f; font-weight:bold;">${d.nettoResultat.toFixed(2)}</span></td>
+                <td>${b.toFixed(2)}</td>
+                <td>${k.toFixed(2)}</td>
+                <td>${g.toFixed(2)}</td>
+                <td>${v.toFixed(2)}</td>
+                <td><span style="color:#2f855a; font-weight:bold;">${ts.toFixed(2)}</span></td>
+                <td>${vk.toFixed(2)}</td>
+                <td>${au.toFixed(2)}</td>
+                <td><span style="color:#b7791f; font-weight:bold;">${nr.toFixed(2)}</span></td>
             </tr>`;
         }).join('');
     }
 
     function exportToCSV() {
-        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        let allData = getData();
         if(allData.length === 0) { alert('Ingen data å eksportere!'); return; }
         
-        // Formatted properly with standard comma separation and explicit download trigger
         let csvContent = "﻿Type,Dato,Bank,Kontant,Gavekort,Vipps,Totalt Salg,Varekjøp,Andre Utgifter,Faste Kostnader,Netto Resultat,Kommentar
 ";
         
         allData.forEach(d => {
             const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
-            csvContent += `${typeLabel},${d.dato},${d.bank},${d.kontant},${d.gavekort},${d.vipps},${d.totaltSalg},${d.varekjoep},${d.andreUtgifter},${d.fasteKostnader},${d.nettoResultat},"${d.kommentar.replace(/"/g, '""')}"
+            csvContent += `${typeLabel},${d.dato || ''},${d.bank || 0},${d.kontant || 0},${d.gavekort || 0},${d.vipps || 0},${d.totaltSalg || 0},${d.varekjoep || 0},${d.andreUtgifter || 0},${d.fasteKostnader || 0},${d.nettoResultat || 0},"${(d.kommentar || '').replace(/"/g, '""')}"
 `;
         });
         
@@ -313,13 +330,13 @@
     }
 
     function printReport() {
-        let allData = JSON.parse(localStorage.getItem('butikkData')) || [];
+        let allData = getData();
         
         let sumSalg = 0;
         let sumNetto = 0;
         allData.forEach(d => {
-            sumSalg += d.totaltSalg;
-            sumNetto += d.nettoResultat;
+            sumSalg += (d.totaltSalg || 0);
+            sumNetto += (d.nettoResultat || 0);
         });
 
         document.getElementById('print-current-date').innerText = new Date().toLocaleDateString('no-NO');
@@ -333,20 +350,19 @@
             printTableBody.innerHTML = allData.map(d => {
                 const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
                 return `<tr>
-                    <td>${d.dato}</td>
+                    <td>${d.dato || ''}</td>
                     <td>${typeLabel}</td>
-                    <td>${d.bank.toFixed(2)}</td>
-                    <td>${d.kontant.toFixed(2)}</td>
-                    <td>${d.gavekort.toFixed(2)}</td>
-                    <td>${d.vipps.toFixed(2)}</td>
-                    <td>${d.totaltSalg.toFixed(2)}</td>
-                    <td>${d.varekjoep.toFixed(2)}</td>
-                    <td>${d.andreUtgifter.toFixed(2)}</td>
-                    <td>${d.nettoResultat.toFixed(2)}</td>
+                    <td>${(d.bank || 0).toFixed(2)}</td>
+                    <td>${(d.kontant || 0).toFixed(2)}</td>
+                    <td>${(d.gavekort || 0).toFixed(2)}</td>
+                    <td>${(d.vipps || 0).toFixed(2)}</td>
+                    <td>${(d.totaltSalg || 0).toFixed(2)}</td>
+                    <td>${(d.varekjoep || 0).toFixed(2)}</td>
+                    <td>${(d.andreUtgifter || 0).toFixed(2)}</td>
+                    <td>${(d.nettoResultat || 0).toFixed(2)}</td>
                 </tr>`;
             }).join('');
         }
-        
         window.print();
     }
 
@@ -356,8 +372,6 @@
             updateDisplay();
         }
     }
-
-    updateDisplay();
 </script>
 </body>
 </html>
