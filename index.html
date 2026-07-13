@@ -42,7 +42,7 @@
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; }
         
         .table-container { margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; min-width: 600px; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; min-width: 650px; }
         th, td { border: 1px solid #edf2f7; padding: 10px; text-align: left; }
         th { background-color: #f7fafc; color: #4a5568; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfd; }
@@ -80,33 +80,33 @@
         <div class="grid-2">
             <div class="form-group">
                 <label for="bank">Bank:</label>
-                <input type="number" id="bank" step="0.01" inputmode="decimal" placeholder="0.00">
+                <input type="text" id="bank" inputmode="decimal" placeholder="0.00">
             </div>
             <div class="form-group">
                 <label for="kontant">Kontant:</label>
-                <input type="number" id="kontant" step="0.01" inputmode="decimal" placeholder="0.00">
+                <input type="text" id="kontant" inputmode="decimal" placeholder="0.00">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
                 <label for="gavekort">Gavekort:</label>
-                <input type="number" id="gavekort" step="0.01" inputmode="decimal" placeholder="0.00">
+                <input type="text" id="gavekort" inputmode="decimal" placeholder="0.00">
             </div>
             <div class="form-group">
                 <label for="vipps">Vipps:</label>
-                <input type="number" id="vipps" step="0.01" inputmode="decimal" placeholder="0.00">
+                <input type="text" id="vipps" inputmode="decimal" placeholder="0.00">
             </div>
         </div>
 
         <div class="grid-2">
             <div class="form-group">
                 <label for="varekjoep">Varekjøp:</label>
-                <input type="number" id="varekjoep" step="0.01" inputmode="decimal" placeholder="0.00">
+                <input type="text" id="varekjoep" inputmode="decimal" placeholder="0.00">
             </div>
             <div class="form-group">
                 <label for="andreUtgifter">Andre Utgifter:</label>
-                <input type="number" id="andreUtgifter" step="0.01" inputmode="decimal" placeholder="0.00">
+                <input type="text" id="andreUtgifter" inputmode="decimal" placeholder="0.00">
             </div>
         </div>
 
@@ -186,7 +186,13 @@
 <script>
     let currentMode = 'daglig';
 
-    // Strictly ensure we only get a clean array to prevent data corruption crashes
+    function parseNum(val) {
+        if(!val) return 0;
+        let clean = val.toString().replace(/,/g, '.');
+        let num = parseFloat(clean);
+        return isNaN(num) ? 0 : num;
+    }
+
     function getData() {
         try {
             let data = localStorage.getItem('butikkData');
@@ -200,7 +206,6 @@
 
     function switchMode(mode) {
         currentMode = mode;
-        
         let btnDaglig = document.getElementById('btn-daglig');
         let btnHistorisk = document.getElementById('btn-historisk');
         if(btnDaglig) btnDaglig.classList.toggle('active', mode === 'daglig');
@@ -221,19 +226,17 @@
     }
 
     function handleFormSubmit(e) {
+        e.preventDefault();
         try {
-            e.preventDefault();
-            
-            const bank = parseFloat(document.getElementById('bank').value) || 0;
-            const kontant = parseFloat(document.getElementById('kontant').value) || 0;
-            const gavekort = parseFloat(document.getElementById('gavekort').value) || 0;
-            const vipps = parseFloat(document.getElementById('vipps').value) || 0;
-            const varekjoep = parseFloat(document.getElementById('varekjoep').value) || 0;
-            const andreUtgifter = parseFloat(document.getElementById('andreUtgifter').value) || 0;
+            const bank = parseNum(document.getElementById('bank').value);
+            const kontant = parseNum(document.getElementById('kontant').value);
+            const gavekort = parseNum(document.getElementById('gavekort').value);
+            const vipps = parseNum(document.getElementById('vipps').value);
+            const varekjoep = parseNum(document.getElementById('varekjoep').value);
+            const andreUtgifter = parseNum(document.getElementById('andreUtgifter').value);
             
             const totaltSalg = bank + kontant + gavekort + vipps;
-            const fasteKostnader = 0;
-            const nettoResultat = totaltSalg - (varekjoep + andreUtgifter + fasteKostnader);
+            const nettoResultat = totaltSalg - (varekjoep + andreUtgifter);
 
             const entry = {
                 mode: currentMode,
@@ -245,7 +248,6 @@
                 totaltSalg: totaltSalg,
                 varekjoep: varekjoep,
                 andreUtgifter: andreUtgifter,
-                fasteKostnader: fasteKostnader,
                 nettoResultat: nettoResultat,
                 kommentar: document.getElementById('kommentar').value || ""
             };
@@ -260,7 +262,7 @@
             alert('Data lagret suksessfullt!');
             updateDisplay();
         } catch (err) {
-            alert('Det oppstod en feil under lagring: ' + err.message);
+            alert('Feil: ' + err.message);
         }
     }
 
@@ -270,21 +272,18 @@
             if(!tableBody) return;
             
             let allData = getData();
-            
             let sumSalg = 0;
             let sumNetto = 0;
             
             allData.forEach(d => {
                 if(d) {
-                    sumSalg += (parseFloat(d.totaltSalg) || 0);
-                    sumNetto += (parseFloat(d.nettoResultat) || 0);
+                    sumSalg += parseNum(d.totaltSalg);
+                    sumNetto += parseNum(d.nettoResultat);
                 }
             });
             
-            let statSalgEl = document.getElementById('stat-salg');
-            let statNettoEl = document.getElementById('stat-netto');
-            if(statSalgEl) statSalgEl.innerText = sumSalg.toFixed(2);
-            if(statNettoEl) statNettoEl.innerText = sumNetto.toFixed(2);
+            if(document.getElementById('stat-salg')) document.getElementById('stat-salg').innerText = sumSalg.toFixed(2);
+            if(document.getElementById('stat-netto')) document.getElementById('stat-netto').innerText = sumNetto.toFixed(2);
             
             if (allData.length === 0) {
                 tableBody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#718096;'>Ingen data lagret ennå.</td></tr>";
@@ -292,24 +291,22 @@
             }
 
             let rowsHtml = '';
-            // Safe reverse looping
             for(let i = allData.length - 1; i >= 0; i--) {
                 let d = allData[i];
                 if(!d) continue;
                 
                 const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
-                const b = parseFloat(d.bank) || 0;
-                const k = parseFloat(d.kontant) || 0;
-                const g = parseFloat(d.gavekort) || 0;
-                const v = parseFloat(d.vipps) || 0;
-                const ts = parseFloat(d.totaltSalg) || 0;
-                const vk = parseFloat(d.varekjoep) || 0;
-                const au = parseFloat(d.andreUtgifter) || 0;
-                const nr = parseFloat(d.nettoResultat) || 0;
-                const datoStr = d.dato || '';
+                const b = parseNum(d.bank);
+                const k = parseNum(d.kontant);
+                const g = parseNum(d.gavekort);
+                const v = parseNum(d.vipps);
+                const ts = parseNum(d.totaltSalg);
+                const vk = parseNum(d.varekjoep);
+                const au = parseNum(d.andreUtgifter);
+                const nr = parseNum(d.nettoResultat);
 
                 rowsHtml += `<tr>
-                    <td><strong>${datoStr}</strong></td>
+                    <td><strong>${d.dato || ''}</strong></td>
                     <td><span style="padding:2px 6px; border-radius:4px; font-size:11px; font-weight:bold; background:${d.mode==='daglig'?'#e2e8f0':'#feebc8'};">${typeLabel}</span></td>
                     <td>${b.toFixed(2)}</td>
                     <td>${k.toFixed(2)}</td>
@@ -323,7 +320,7 @@
             }
             tableBody.innerHTML = rowsHtml;
         } catch (err) {
-            console.error("Display error", err);
+            console.error(err);
         }
     }
 
@@ -332,40 +329,34 @@
             let allData = getData();
             if(allData.length === 0) { alert('Ingen data å eksportere!'); return; }
             
-            let csvContent = "﻿Type,Dato,Bank,Kontant,Gavekort,Vipps,Totalt Salg,Varekjøp,Andre Utgifter,Faste Kostnader,Netto Resultat,Kommentar
-";
-            
+            let csvContent = "\uFEFFType,Dato,Bank,Kontant,Gavekort,Vipps,Totalt Salg,Varekjøp,Andre Utgifter,Netto Resultat,Kommentar\r\n";
             allData.forEach(d => {
                 if(d) {
                     const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
-                    csvContent += `${typeLabel},${d.dato || ''},${d.bank || 0},${d.kontant || 0},${d.gavekort || 0},${d.vipps || 0},${d.totaltSalg || 0},${d.varekjoep || 0},${d.andreUtgifter || 0},${d.fasteKostnader || 0},${d.nettoResultat || 0},"${(d.kommentar || '').replace(/"/g, '""')}"
-`;
+                    csvContent += `${typeLabel},${d.dato || ''},${d.bank || 0},${d.kontant || 0},${d.gavekort || 0},${d.vipps || 0},${d.totaltSalg || 0},${d.varekjoep || 0},${d.andreUtgifter || 0},${d.nettoResultat || 0},"${(d.kommentar || '').replace(/"/g, '""')}"\r\n`;
                 }
             });
             
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
+            link.setAttribute("href", URL.createObjectURL(blob));
             link.setAttribute("download", "butikk_regnskap_data.csv");
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         } catch(err) {
-            alert("Feil ved eksport: " + err.message);
+            alert("Feil: " + err.message);
         }
     }
 
     function printReport() {
         try {
             let allData = getData();
-            
-            let sumSalg = 0;
-            let sumNetto = 0;
+            let sumSalg = 0; let sumNetto = 0;
             allData.forEach(d => {
                 if(d) {
-                    sumSalg += (parseFloat(d.totaltSalg) || 0);
-                    sumNetto += (parseFloat(d.nettoResultat) || 0);
+                    sumSalg += parseNum(d.totaltSalg);
+                    sumNetto += parseNum(d.nettoResultat);
                 }
             });
 
@@ -386,14 +377,14 @@
                         printHtml += `<tr>
                             <td>${d.dato || ''}</td>
                             <td>${typeLabel}</td>
-                            <td>${(parseFloat(d.bank) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.kontant) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.gavekort) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.vipps) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.totaltSalg) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.varekjoep) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.andreUtgifter) || 0).toFixed(2)}</td>
-                            <td>${(parseFloat(d.nettoResultat) || 0).toFixed(2)}</td>
+                            <td>${parseNum(d.bank).toFixed(2)}</td>
+                            <td>${parseNum(d.kontant).toFixed(2)}</td>
+                            <td>${parseNum(d.gavekort).toFixed(2)}</td>
+                            <td>${parseNum(d.vipps).toFixed(2)}</td>
+                            <td>${parseNum(d.totaltSalg).toFixed(2)}</td>
+                            <td>${parseNum(d.varekjoep).toFixed(2)}</td>
+                            <td>${parseNum(d.andreUtgifter).toFixed(2)}</td>
+                            <td>${parseNum(d.nettoResultat).toFixed(2)}</td>
                         </tr>`;
                     }
                 });
@@ -401,7 +392,7 @@
             }
             window.print();
         } catch(err) {
-            alert("Feil ved utskrift: " + err.message);
+            alert("Feil: " + err.message);
         }
     }
 
@@ -412,9 +403,7 @@
         }
     }
 
-    // Set initial configuration
-    const initialDato = document.getElementById('dato');
-    if(initialDato) initialDato.valueAsDate = new Date();
+    if(document.getElementById('dato')) document.getElementById('dato').valueAsDate = new Date();
     updateDisplay();
 </script>
 </body>
