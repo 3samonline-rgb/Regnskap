@@ -13,7 +13,7 @@
             color: #333; 
         }
         .container { 
-            max-width: 900px; 
+            max-width: 1000px; 
             margin: 0 auto; 
             background: white; 
             padding: 25px; 
@@ -21,7 +21,7 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
         }
         .header-area { text-align: center; margin-bottom: 25px; }
-        .header-area h1 { color: #004080; margin: 0; font-size: 26px; font-weight: 800; }
+        .header-area h1 { color: #004080; margin: 0; font-size: 28px; font-weight: 800; }
         .header-area p { color: #718096; margin: 5px 0 0 0; font-size: 14px; font-weight: 500; }
         
         .nav-buttons { display: flex; gap: 10px; margin-bottom: 25px; }
@@ -50,12 +50,30 @@
         
         .import-box { border: 2px dashed #cbd5e0; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: center; background: #fafafa; }
         
-        .stats-box { background: #ebf8ff; border: 1px solid #bee3f8; padding: 15px; border-radius: 8px; margin-top: 25px; }
-        .stats-title { font-weight: bold; color: #2b6cb0; margin-bottom: 8px; font-size: 14px; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; font-size: 14px; }
+        /* ENHANCED STATS BOX */
+        .stats-box { background: #f7fafc; border: 1px solid #e2e8f0; padding: 18px; border-radius: 12px; margin-top: 25px; }
+        .stats-title { font-weight: bold; color: #2d3748; margin-bottom: 12px; font-size: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; }
+        .stat-card { background: white; padding: 12px; border-radius: 8px; border: 1px solid #edf2f7; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-card-title { font-size: 11px; color: #718096; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; }
+        .stat-card-value { font-size: 18px; font-weight: bold; }
         
+        /* SIMPLE CSS CHART */
+        .chart-section { margin-top: 25px; background: white; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .chart-title { font-weight: bold; font-size: 14px; margin-bottom: 10px; color: #4a5568; }
+        .chart-container { display: flex; align-items: flex-end; height: 150px; gap: 8px; padding-top: 10px; border-bottom: 2px solid #cbd5e0; overflow-x: auto; }
+        .chart-bar-wrapper { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 30px; height: 100%; justify-content: flex-end; }
+        .chart-bar { width: 100%; background: #4299e1; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.5s ease; position: relative; }
+        .chart-bar:hover { background: #3182ce; }
+        .chart-bar::after { content: attr(data-value); position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: bold; color: #2d3748; white-space: nowrap; }
+        .chart-label { font-size: 10px; color: #718096; margin-top: 5px; text-align: center; white-space: nowrap; max-width: 45px; overflow: hidden; text-overflow: ellipsis; }
+
+        /* TASKS / REMINDERS BOX */
+        .notes-box { margin-top: 25px; background: #fffaf0; border: 1px solid #feebc8; padding: 15px; border-radius: 8px; }
+        .notes-title { font-weight: bold; color: #dd6b20; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+
         .table-container { margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; min-width: 950px; }
         th, td { border: 1px solid #edf2f7; padding: 10px; text-align: left; }
         th { background-color: #f7fafc; color: #4a5568; font-weight: bold; }
         tr:nth-child(even) { background-color: #fcfdfd; }
@@ -66,8 +84,8 @@
             body { background: white; color: black; padding: 0; margin: 0; }
             .container { display: none !important; }
             #print-section { display: block !important; padding: 20px; }
-            table { width: 100%; border-collapse: collapse; font-size: 11px; }
-            th, td { border: 1px solid #333 !important; padding: 6px; text-align: left; }
+            table { width: 100%; border-collapse: collapse; font-size: 10px; }
+            th, td { border: 1px solid #333 !important; padding: 5px; text-align: left; }
             th { background-color: #eee !important; color: #000 !important; }
             .print-header { text-align: center; margin-bottom: 20px; }
             .print-stats { margin-bottom: 15px; padding: 10px; border: 1px solid #333; }
@@ -79,7 +97,7 @@
 <div class="container">
     <div class="header-area">
         <h1>Afro kjøp AS</h1>
-        <p>Internasjonal dagligvare - Regnskap & Dashboard</p>
+        <p>Internasjonal dagligvare - Regnskapsportal</p>
     </div>
     
     <div class="nav-buttons">
@@ -87,11 +105,13 @@
         <div id="btn-historisk" class="nav-btn" onclick="switchMode('historisk')">Historisk Rapport</div>
     </div>
 
+    <!-- SUB NAVIGATION FOR HISTORISK MODE -->
     <div id="historisk-nav-container" class="sub-nav" style="display:none;">
         <div id="sub-btn-detaljert" class="sub-btn active" onclick="switchSubMode('detaljert')">Daglig oversikt (detaljert)</div>
         <div id="sub-btn-maanedlig" class="sub-btn" onclick="switchSubMode('maanedlig')">Månedlig sammendrag</div>
     </div>
 
+    <!-- MAIN FORM -->
     <form id="storeForm" onsubmit="handleFormSubmit(event)">
         <div class="form-group">
             <label id="dateLabel" for="dato">Dato:</label>
@@ -100,7 +120,7 @@
 
         <div class="grid-2">
             <div class="form-group">
-                <label for="bank">Bank:</label>
+                <label for="bank">Bank (Kort / terminal):</label>
                 <input type="text" id="bank" inputmode="decimal" placeholder="0.00">
             </div>
             <div class="form-group">
@@ -122,7 +142,7 @@
 
         <div class="grid-3">
             <div class="form-group">
-                <label for="varekjoep">Varekjøp (Marekjøp):</label>
+                <label for="varekjoep">Varekjøp:</label>
                 <input type="text" id="varekjoep" inputmode="decimal" placeholder="0.00">
             </div>
             <div class="form-group">
@@ -136,13 +156,13 @@
         </div>
 
         <div class="form-group">
-            <label for="svinn" style="color: #c53030;">Svinn (Bortskjemte grønnsaker / frukter):</label>
+            <label for="svinn" style="color: #c53030;">Svinn (Bortskjemte grønnsaker / frukter / skader):</label>
             <input type="text" id="svinn" inputmode="decimal" placeholder="0.00" style="border-color: #feb2b2;">
         </div>
 
         <div class="form-group">
-            <label for="kommentar">Kommentar / Notater:</label>
-            <textarea id="kommentar" rows="2" placeholder="Kommentarer eller spesifikke hendelser..."></textarea>
+            <label for="kommentar">Kommentar / Spesielle hendelser:</label>
+            <textarea id="kommentar" rows="2" placeholder="Skriv kommentar her..."></textarea>
         </div>
 
         <button type="submit">Lagre Data</button>
@@ -150,34 +170,69 @@
         <button type="button" class="btn-info" onclick="printReport()">Skriv ut Rapport (A4)</button>
     </form>
 
+    <!-- IMPORT BOX -->
     <div id="importContainer" class="import-box">
         <label style="font-weight:bold; color:#2d3748; display:block; margin-bottom:5px;">Importer historiske data (CSV-fil):</label>
         <p style="font-size:11px; color:#718096; margin:0 0 10px 0;">Importer data raskt fra Excel eller Numbers (Må være i kommaseparert CSV format)</p>
         <input type="file" id="csvFileInput" accept=".csv" onchange="importCSV(event)" style="font-size:12px; padding: 5px;">
     </div>
 
+    <!-- ADVANCED ANALYTICAL STATS BOX -->
     <div class="stats-box">
-        <div class="stats-title">📊 Oppsummering (Akkumulert totalt)</div>
+        <div class="stats-title">📊 Butikk-analyse & Resultater (Akkumulert)</div>
         <div class="stats-grid">
-            <div>Totalt Salg: <span id="stat-salg" style="font-weight:bold; color:#2f855a;">0.00</span> kr</div>
-            <div>Totalt Svinn: <span id="stat-svinn" style="font-weight:bold; color:#c53030;">0.00</span> kr</div>
-            <div>Netto Resultat: <span id="stat-netto" style="font-weight:bold; color:#b7791f;">0.00</span> kr</div>
+            <div class="stat-card">
+                <div class="stat-card-title">Totalt Salg</div>
+                <div class="stat-card-value" id="stat-salg" style="color: #2f855a;">0.00 kr</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">MVA Beregnet (15%)</div>
+                <div class="stat-card-value" id="stat-mva" style="color: #3182ce;">0.00 kr</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Totalt Svinn</div>
+                <div class="stat-card-value" id="stat-svinn" style="color: #e53e3e;">0.00 kr</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-title">Svinn Prosent (%)</div>
+                <div class="stat-card-value" id="stat-svinn-prosent">0.00%</div>
+            </div>
+            <div class="stat-card" style="grid-column: span 2;">
+                <div class="stat-card-title">Netto Resultat (Etter alle utgifter)</div>
+                <div class="stat-card-value" id="stat-netto" style="color: #b7791f; font-size: 20px;">0.00 kr</div>
+            </div>
         </div>
     </div>
 
+    <!-- SALES CHART SECTION -->
+    <div class="chart-section" id="chartSection">
+        <div class="chart-title">📈 Siste 10 dager salgstrend (kr)</div>
+        <div class="chart-container" id="salesChart">
+            <!-- Bars will be injected dynamically -->
+        </div>
+    </div>
+
+    <!-- DATA TABLE -->
     <h3 id="tableHeaderTitle" style="margin-top:25px;">Lagrede oppføringer:</h3>
     <div class="table-container">
         <table id="mainDataTable">
             <thead id="tableHeader">
-                </thead>
+            </thead>
             <tbody id="tableBody">
             </tbody>
         </table>
+    </div>
+
+    <!-- PERSISTENT REMINDERS / NOTES -->
+    <div class="notes-box">
+        <div class="notes-title">📌 Huskeliste & Dagligvare-notater (Lagres lokalt)</div>
+        <textarea id="localNotes" rows="3" placeholder="Skriv viktige påminnelser her (f.eks. Bestille ferske grønnsaker på søndag, sjekke fryser temperatur)..." oninput="saveNotes()"></textarea>
     </div>
     
     <button type="button" class="btn-danger" onclick="clearAllData()">Slett all data (Nullstill systemet)</button>
 </div>
 
+<!-- PRINT CONTAINER (Optimized for A4) -->
 <div id="print-section">
     <div class="print-header">
         <h1>Afro kjøp AS - Regnskapsrapport</h1>
@@ -187,15 +242,17 @@
     <div class="print-stats">
         <h3>Sammendrag</h3>
         <p><strong>Totalt Salg:</strong> <span id="print-stat-salg">0.00</span> kr</p>
-        <p><strong>Totalt Svinn:</strong> <span id="print-stat-svinn">0.00</span> kr</p>
-        <p><strong>Netto Resultat (inkl. fratrekk for svinn & utgifter):</strong> <span id="print-stat-netto">0.00</span> kr</p>
+        <p><strong>MVA Beregnet (15%):</strong> <span id="print-stat-mva">0.00</span> kr</p>
+        <p><strong>Totalt Svinn (Grønnsaker/Salgstap):</strong> <span id="print-stat-svinn">0.00</span> kr</p>
+        <p><strong>Netto Resultat:</strong> <span id="print-stat-netto">0.00</span> kr</p>
     </div>
     <table>
         <thead>
             <tr>
                 <th>Dato</th>
                 <th>Type</th>
-                <th>Salg (Bank+Kont+Gave+Vipps)</th>
+                <th>Salg</th>
+                <th>Beregnet MVA</th>
                 <th>Varekjøp</th>
                 <th>Utgifter</th>
                 <th>Faste kost.</th>
@@ -210,8 +267,8 @@
 </div>
 
 <script>
-    let currentMode = 'daglig'; // 'daglig' or 'historisk'
-    let currentSubMode = 'detaljert'; // 'detaljert' or 'maanedlig'
+    let currentMode = 'daglig'; 
+    let currentSubMode = 'detaljert'; 
 
     function parseNum(val) {
         if(val === undefined || val === null || val === '') return 0;
@@ -238,6 +295,7 @@
         let histNav = document.getElementById('historisk-nav-container');
         let form = document.getElementById('storeForm');
         let importBox = document.getElementById('importContainer');
+        let chart = document.getElementById('chartSection');
         
         if(btnDaglig) btnDaglig.classList.toggle('active', mode === 'daglig');
         if(btnHistorisk) btnHistorisk.classList.toggle('active', mode === 'historisk');
@@ -246,10 +304,12 @@
             if(histNav) histNav.style.display = 'flex';
             if(form) form.style.display = 'none';
             if(importBox) importBox.style.display = 'none';
+            if(chart) chart.style.display = 'none';
         } else {
             if(histNav) histNav.style.display = 'none';
             if(form) form.style.display = 'block';
             if(importBox) importBox.style.display = 'block';
+            if(chart) chart.style.display = 'block';
             document.getElementById('dato').valueAsDate = new Date();
         }
         updateDisplay();
@@ -275,7 +335,6 @@
             const svinn = parseNum(document.getElementById('svinn').value);
             
             const totaltSalg = bank + kontant + gavekort + vipps;
-            // Netto = Salg - (Varekjøp + Andre utgifter + Faste kostnader + Svinn)
             const nettoResultat = totaltSalg - (varekjoep + andreUtgifter + fastKostnad + svinn);
 
             const entry = {
@@ -316,7 +375,7 @@
             
             let allData = getData();
             
-            // Calculate Accumulated Metrics (Total overall)
+            // Calculate Statistics
             let sumSalg = 0;
             let sumSvinn = 0;
             let sumNetto = 0;
@@ -328,19 +387,37 @@
                     sumNetto += parseNum(d.nettoResultat);
                 }
             });
+
+            // Food VAT (MVA) in Norway is 15%
+            let computedMVA = sumSalg - (sumSalg / 1.15); 
+            let svinnProsent = sumSalg > 0 ? (sumSvinn / sumSalg) * 100 : 0;
             
-            if(document.getElementById('stat-salg')) document.getElementById('stat-salg').innerText = sumSalg.toFixed(2);
-            if(document.getElementById('stat-svinn')) document.getElementById('stat-svinn').innerText = sumSvinn.toFixed(2);
-            if(document.getElementById('stat-netto')) document.getElementById('stat-netto').innerText = sumNetto.toFixed(2);
+            if(document.getElementById('stat-salg')) document.getElementById('stat-salg').innerText = sumSalg.toFixed(2) + " kr";
+            if(document.getElementById('stat-mva')) document.getElementById('stat-mva').innerText = computedMVA.toFixed(2) + " kr";
+            if(document.getElementById('stat-svinn')) document.getElementById('stat-svinn').innerText = sumSvinn.toFixed(2) + " kr";
             
+            const svinnBadge = document.getElementById('stat-svinn-prosent');
+            if(svinnBadge) {
+                svinnBadge.innerText = svinnProsent.toFixed(2) + "%";
+                if (svinnProsent > 5) {
+                    svinnBadge.style.color = "#e53e3e"; // Red alert for high food waste
+                } else {
+                    svinnBadge.style.color = "#2f855a"; // Green for safe level
+                }
+            }
+            
+            if(document.getElementById('stat-netto')) document.getElementById('stat-netto').innerText = sumNetto.toFixed(2) + " kr";
+            
+            // RENDER VISUAL CHART
+            renderChart(allData);
+
             if (allData.length === 0) {
                 tableHeader.innerHTML = `<tr><th>Dato</th><th>Salg</th><th>Netto</th></tr>`;
-                tableBody.innerHTML = "<tr><td colspan='10' style='text-align:center; color:#718096;'>Ingen data lagret ennå.</td></tr>";
+                tableBody.innerHTML = "<tr><td colspan='12' style='text-align:center; color:#718096;'>Ingen data lagret ennå.</td></tr>";
                 return;
             }
 
             if (currentMode === 'daglig' || (currentMode === 'historisk' && currentSubMode === 'detaljert')) {
-                // DETAILED DAILY OVERVIEW (TABLE VIEW)
                 document.getElementById('tableHeaderTitle').innerText = "Lagrede oppføringer (Daglige detaljer):";
                 tableHeader.innerHTML = `<tr>
                     <th>Dato</th>
@@ -349,6 +426,7 @@
                     <th>Gavekort</th>
                     <th>Vipps</th>
                     <th>Salg (Total)</th>
+                    <th>Beregnet MVA (15%)</th>
                     <th>Varekjøp</th>
                     <th>Andre utg.</th>
                     <th>Faste kost.</th>
@@ -358,7 +436,6 @@
                 </tr>`;
 
                 let rowsHtml = '';
-                // Sort by date (newest first)
                 let sortedData = allData.slice().sort((a,b) => new Date(b.dato) - new Date(a.dato));
                 
                 sortedData.forEach(d => {
@@ -372,6 +449,7 @@
                     const fk = parseNum(d.fastKostnad);
                     const sv = parseNum(d.svinn);
                     const nr = parseNum(d.nettoResultat);
+                    const mvaVal = ts - (ts / 1.15);
                     const comm = d.kommentar || '';
 
                     rowsHtml += `<tr>
@@ -381,6 +459,7 @@
                         <td>${g.toFixed(2)}</td>
                         <td>${v.toFixed(2)}</td>
                         <td><span style="color:#2f855a; font-weight:bold;">${ts.toFixed(2)}</span></td>
+                        <td style="color:#3182ce;">${mvaVal.toFixed(2)}</td>
                         <td>${vk.toFixed(2)}</td>
                         <td>${au.toFixed(2)}</td>
                         <td>${fk.toFixed(2)}</td>
@@ -392,11 +471,11 @@
                 tableBody.innerHTML = rowsHtml;
                 
             } else if (currentMode === 'historisk' && currentSubMode === 'maanedlig') {
-                // MONTHLY ACCUMULATED SUMMARY (MONTHLY COMPILATION)
                 document.getElementById('tableHeaderTitle').innerText = "Månedlig sammendrag:";
                 tableHeader.innerHTML = `<tr>
                     <th>Måned</th>
                     <th>Totalt Salg</th>
+                    <th>Beregnet MVA (15%)</th>
                     <th>Totalt Varekjøp</th>
                     <th>Totalt Andre utg.</th>
                     <th>Totalt Faste kost.</th>
@@ -404,11 +483,10 @@
                     <th>Totalt Netto Resultat</th>
                 </tr>`;
 
-                // Calculate month-by-month accumulations
                 let monthlyMap = {};
                 allData.forEach(d => {
                     if(!d.dato) return;
-                    let monthStr = d.dato.substring(0, 7); // e.g., "2026-05"
+                    let monthStr = d.dato.substring(0, 7); 
                     if(!monthlyMap[monthStr]) {
                         monthlyMap[monthStr] = { salg: 0, varekjoep: 0, andreUtg: 0, fastK: 0, svinn: 0, netto: 0 };
                     }
@@ -425,9 +503,11 @@
                 
                 sortedMonths.forEach(m => {
                     let data = monthlyMap[m];
+                    let mvaVal = data.salg - (data.salg / 1.15);
                     rowsHtml += `<tr>
                         <td><strong>${m}</strong></td>
                         <td style="color:#2f855a; font-weight:bold;">${data.salg.toFixed(2)} kr</td>
+                        <td style="color:#3182ce;">${mvaVal.toFixed(2)} kr</td>
                         <td>${data.varekjoep.toFixed(2)} kr</td>
                         <td>${data.andreUtg.toFixed(2)} kr</td>
                         <td>${data.fastK.toFixed(2)} kr</td>
@@ -442,7 +522,42 @@
         }
     }
 
-    // CSV IMPORT FUNCTION (EXCEL / NUMBERS INTEGRATION)
+    // DRAW BAR CHART DYNAMICALLY
+    function renderChart(allData) {
+        const chartContainer = document.getElementById('salesChart');
+        if(!chartContainer) return;
+        
+        if(allData.length === 0) {
+            chartContainer.innerHTML = "<div style='color:#a0aec0; font-size:12px; margin:auto;'>Ingen data tilgjengelig for visuell trend.</div>";
+            return;
+        }
+
+        // Sort data chronologically (oldest first)
+        let chronData = allData.slice().sort((a,b) => new Date(a.dato) - new Date(b.dato));
+        // Take the last 10 records
+        let lastTen = chronData.slice(-10);
+
+        let maxSalg = Math.max(...lastTen.map(d => parseNum(d.totaltSalg)), 1);
+
+        let chartHtml = '';
+        lastTen.forEach(d => {
+            let sale = parseNum(d.totaltSalg);
+            let heightPercent = (sale / maxSalg) * 100;
+            // Crop date to display day/month
+            let dateObj = new Date(d.dato);
+            let label = isNaN(dateObj.getTime()) ? '' : `${dateObj.getDate()}/${dateObj.getMonth() + 1}`;
+
+            chartHtml += `
+                <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height: ${heightPercent}%;" data-value="${sale.toFixed(0)}"></div>
+                    <div class="chart-label" title="${d.dato}">${label}</div>
+                </div>
+            `;
+        });
+        chartContainer.innerHTML = chartHtml;
+    }
+
+    // IMPORT FROM CSV
     function importCSV(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -459,9 +574,8 @@
                     let line = lines[i].trim();
                     if (!line) continue;
 
-                    // Match CSV format (with optional quotes for safety)
                     let columns = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                    if (columns.length < 11) continue;
+                    if (columns.length < 13) continue;
 
                     let mode = columns[0].toLowerCase() === 'historisk' ? 'historisk' : 'daglig';
                     let dato = columns[1];
@@ -477,7 +591,6 @@
                     let nettoResultat = parseNum(columns[11]);
                     let kommentar = columns[12] ? columns[12].replace(/^"|"$/g, '') : '';
 
-                    // Recalculate correctly if they are empty
                     if(totaltSalg === 0) {
                         totaltSalg = bank + kontant + gavekort + vipps;
                     }
@@ -506,7 +619,7 @@
                 localStorage.setItem('butikkData', JSON.stringify(existingData));
                 alert(`Suksess! Importerte ${importedCount} rader fra CSV.`);
                 updateDisplay();
-                document.getElementById('csvFileInput').value = ''; // Reset file input
+                document.getElementById('csvFileInput').value = '';
             } catch (err) {
                 alert("Det oppstod en feil under tolking av CSV-filen. Kontroller formatet.");
             }
@@ -551,8 +664,11 @@
                 }
             });
 
+            let computedMVA = sumSalg - (sumSalg / 1.15);
+
             document.getElementById('print-current-date').innerText = new Date().toLocaleDateString('no-NO');
             document.getElementById('print-stat-salg').innerText = sumSalg.toFixed(2);
+            document.getElementById('print-stat-mva').innerText = computedMVA.toFixed(2);
             document.getElementById('print-stat-svinn').innerText = sumSvinn.toFixed(2);
             document.getElementById('print-stat-netto').innerText = sumNetto.toFixed(2);
             
@@ -560,24 +676,25 @@
             if(!printTableBody) return;
             
             if (allData.length === 0) {
-                printTableBody.innerHTML = "<tr><td colspan='9' style='text-align:center;'>Ingen data tilgjengelig.</td></tr>";
+                printTableBody.innerHTML = "<tr><td colspan='10' style='text-align:center;'>Ingen data tilgjengelig.</td></tr>";
             } else {
                 let printHtml = '';
-                // Sort newest first for professional print
                 let sortedData = allData.slice().sort((a,b) => new Date(b.dato) - new Date(a.dato));
                 sortedData.forEach(d => {
                     if(d) {
                         const typeLabel = d.mode === 'daglig' ? 'Daglig' : 'Historisk';
+                        const mvaVal = parseNum(d.totaltSalg) - (parseNum(d.totaltSalg) / 1.15);
                         printHtml += `<tr>
                             <td>${d.dato || ''}</td>
                             <td>${typeLabel}</td>
                             <td>${parseNum(d.totaltSalg).toFixed(2)}</td>
+                            <td>${mvaVal.toFixed(2)}</td>
                             <td>${parseNum(d.varekjoep).toFixed(2)}</td>
                             <td>${parseNum(d.andreUtgifter).toFixed(2)}</td>
                             <td>${parseNum(d.fastKostnad).toFixed(2)}</td>
                             <td style="color:#c53030;">${parseNum(d.svinn).toFixed(2)}</td>
                             <td>${parseNum(d.nettoResultat).toFixed(2)}</td>
-                            <td style="font-size:10px;">${d.kommentar || ''}</td>
+                            <td style="word-break: break-all;">${d.kommentar || ''}</td>
                         </tr>`;
                     }
                 });
@@ -589,14 +706,31 @@
         }
     }
 
+    // PERSISTENT MEMO LABELS FUNCTIONS
+    function saveNotes() {
+        const text = document.getElementById('localNotes').value;
+        localStorage.setItem('butikkNotes', text);
+    }
+
+    function loadNotes() {
+        const text = localStorage.getItem('butikkNotes');
+        if(text) {
+            document.getElementById('localNotes').value = text;
+        }
+    }
+
     function clearAllData() {
         if(confirm("Er du sikker på at du vil slette all data og nullstille systemet?")) {
             localStorage.removeItem('butikkData');
+            localStorage.removeItem('butikkNotes');
+            if(document.getElementById('localNotes')) document.getElementById('localNotes').value = '';
             updateDisplay();
         }
     }
 
+    // INITIALIZATION
     if(document.getElementById('dato')) document.getElementById('dato').valueAsDate = new Date();
+    loadNotes();
     updateDisplay();
 </script>
 </body>
